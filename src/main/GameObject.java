@@ -12,7 +12,8 @@ import org.newdawn.slick.geom.Shape;
  */
 
 public class GameObject {
-    protected int x, y, width, height, poly, offX, offY;
+    protected int x, y, width, height, offX, offY;
+    protected byte poly;
     private Shape hitbox;
     protected boolean center;
     protected Image img;
@@ -95,6 +96,26 @@ public class GameObject {
     protected void renewSize() {
         width = (int) getHitbox().getWidth();
         height = (int) getHitbox().getHeight();
+    }
+
+    /**
+     * resize the hitbox
+     * @param width width of the new hitbox
+     * @param height height of the new hitbox
+     */
+    protected void resizeHitbox(int width, int height) {
+        hitbox = new Rectangle(x, y, width, height);
+        this.width = width;
+        this.height = height;
+    }
+
+    /**
+     * resize the hitbox
+     * @param radius radius of the new hitbox
+     */
+    protected void resizeHitbox(int radius) {
+        hitbox = new Circle(x, y, radius);
+        width = height = radius;
     }
 
     public Image getImage() {return img;}
