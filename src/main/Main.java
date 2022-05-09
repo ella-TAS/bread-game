@@ -18,8 +18,8 @@ public class Main extends BasicGame {
     public Input input;
 
     //gameObjects
-    private Player player;
-    private List<Bread> bread_list = new LinkedList<Bread>();
+    public static Player player;
+    private List<Bread> bread_list = new LinkedList<>();
 
     /**
      * 0 - menu
@@ -52,8 +52,13 @@ public class Main extends BasicGame {
     @Override
     public void update(GameContainer gc, int arg) {
         //game
+        pauseCheck();
         if(UIstate == 1) {
             player.update();
+            for(Bread b : bread_list) {
+                b.update();
+                if(b.delete) bread_list.remove(b);
+            }
         }
     }
 
@@ -68,7 +73,7 @@ public class Main extends BasicGame {
         }
 
         //game
-        else if(UIstate == 1) {
+        else {
             //player
             g.draw(player.getHitbox());
             player.getImage().drawCentered(player.getX(), player.getY());
@@ -80,8 +85,23 @@ public class Main extends BasicGame {
         }
 
         //paused
-        else {
+        if(UIstate == 2) {
+            g.drawString("Paused", 640, 20);
+        }
+    }
 
+    /**
+     * pauses or unpauses the game when Esc is pressed
+     */
+    private void pauseCheck() {
+        if(input.isKeyPressed(Input.KEY_ESCAPE)) {
+            if (UIstate == 1) {
+                //unpause
+                UIstate = 2;
+            } else if(UIstate == 2) {
+                //pause
+                UIstate = 1;
+            }
         }
     }
 
