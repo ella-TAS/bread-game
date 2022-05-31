@@ -2,6 +2,7 @@ package main;
 
 import gameObjects.*;
 import org.newdawn.slick.*;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,16 +11,27 @@ import java.util.Random;
 /**
  * main class for handling GameContainer, render and update instance
  * @author Ella
+ *
  * @version alpha 0.1
  */
 
 public class Main extends BasicGame {
+    //constants
+    private final float bread_spawn_rate = .1f;
+
+    //util
     public Random random;
     public Input input;
+    public Image background;
 
     //gameObjects
     public static Player player;
-    private List<Bread> bread_list = new LinkedList<>();
+    public static Counter counter;
+    public static List<Bread> breadList = new LinkedList<>();
+    public static List<Bomb> bombList = new LinkedList<>();
+
+    //properties
+    public static boolean gameover;
 
     /**
      * 0 - menu
@@ -38,26 +50,48 @@ public class Main extends BasicGame {
     @Override
     public void init(GameContainer gc) throws SlickException {
         info("Starting game");
-        random = new Random();
         input = gc.getInput();
-        UIstate = 1;
+        random = new Random();
+        counter = new Counter();
         player = new Player(input);
-        bread_list.add(new Bread(600, (byte) 0));
-        bread_list.add(new Bread(800, (byte) 1));
+        gameover = false;
+        UIstate = 1;
+        background = new Image("assets/textures/bg.png", false, 2).getScaledCopy(5);
+
+        bombList.add(new Bomb(300));
     }
 
     /**
      * updates the game every frame
      */
     @Override
-    public void update(GameContainer gc, int arg) {
+    public void update(GameContainer gc, int arg) throws SlickException {
         //game
         pauseCheck();
         if(UIstate == 1) {
             player.update();
-            for(Bread b : bread_list) {
-                b.update();
-                if(b.delete) bread_list.remove(b);
+            if(gameover && player.posY > 3000) UIstate = 0;
+            spawnItems();
+
+            //gameObjects
+            for(Bread b : breadList) {
+                if(!b.delete) b.update();
+            }
+            for(Bread b : breadList) {
+                if(b.delete) {
+                    breadList.remove(b);
+                    break;
+                }
+            }
+
+            for(Bomb b : bombList) {
+                if(!b.delete) b.update();
+            }
+            for(Bomb b : bombList) {
+                if(b.delete) {
+                    bombList.remove(b);
+                    break;
+                }
             }
         }
     }
@@ -69,18 +103,34 @@ public class Main extends BasicGame {
     public void render(GameContainer gc, Graphics g) {
         //menu
         if(UIstate == 0) {
-
+            g.drawString("Menu", 300, 300);
         }
 
         //game
         else {
+            //background
+            g.drawImage(background, 0, 0);
+
+            //score
+            g.drawString("Weight: " + counter.getScore(), 10, 40);
+
             //player
             g.draw(player.getHitbox());
-            player.getImage().drawCentered(player.getX(), player.getY());
+            if(gameover) player.getImage().getScaledCopy(-1).drawCentered(player.getX(), player.getY());
+            else player.getImage().drawCentered(player.getX(), player.getY());
 
-            for(Bread b : bread_list) {
-                g.draw(b.getHitbox());
-                b.getImage().drawCentered(b.getX(), b.getY());
+            for(Bread b : breadList) {
+                if(!b.delete) {
+                    g.draw(b.getHitbox());
+                    b.getImage().drawCentered(b.getX(), b.getY());
+                }
+            }
+
+            for(Bomb b : bombList) {
+                if(!b.delete) {
+                    g.draw(b.getHitbox());
+                    b.getImage().drawCentered(b.getX(), b.getY());
+                }
             }
         }
 
@@ -95,14 +145,28 @@ public class Main extends BasicGame {
      */
     private void pauseCheck() {
         if(input.isKeyPressed(Input.KEY_ESCAPE)) {
-            if (UIstate == 1) {
-                //unpause
-                UIstate = 2;
-            } else if(UIstate == 2) {
-                //pause
-                UIstate = 1;
-            }
+            if (UIstate == 0) return;
+            UIstate = (byte) (-UIstate + 3);
         }
+    }
+
+    private void spawnItems() throws SlickException {
+        //bread
+        if(random.nextFloat() < bread_spawn_rate) {
+            breadList.add(new Bread(random.nextInt(1280), (byte) random.nextInt(3)));
+        }
+        //bomb
+    }
+
+    /**
+     * called on game over
+     */
+    public static void gameover() {
+        if(!gameover) {
+            player.speedY = -35;
+            //play sound
+        }
+        gameover = true;
     }
 
     /**

@@ -6,24 +6,27 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 /**
- * the bread collectible
+ * the bread item
  * @author Ella
  */
 
 public class Bread extends GameObject {
     public boolean delete;
-    private static final int spawn_y = 500;
-    private final float speedY = 3.0f;
+    private static final int spawn_y = -80;
+    private final int floor_level = 800;
+    private final float speedY = 5.0f;
     private final byte type;
     private int posY;
 
     public Bread(int x, byte type) throws SlickException {
-        super(new Image("assets/textures/bread" + type + ".png", false, 2).getScaledCopy(5), x, spawn_y, 0, 0);
+        super(new Image("assets/textures/bread_" + type + ".png", false, 2).getScaledCopy(4), x, spawn_y, 0, 0);
         this.type = type;
         delete = false;
-        switch(type) {
+        posY = spawn_y;
+        switch (type) {
             case 0: resizeHitbox(100, 100); break;
             case 1: resizeHitbox(80, 150); break;
+            case 2: resizeHitbox(120, 50); break;
         }
         moveHitbox();
     }
@@ -33,8 +36,8 @@ public class Bread extends GameObject {
      */
     public void update() {
         move();
-        collide();
         moveHitbox();
+        collide();
     }
 
     /**
@@ -42,14 +45,21 @@ public class Bread extends GameObject {
      */
     private void move() {
         posY += speedY;
+        if(posY > floor_level) posY = floor_level;
         setLoc(getX(), Math.round(posY));
     }
 
     /**
-     * checks collision with the player
+     * checks collision with player
      */
     private void collide() {
-        if(getHitbox().intersects(Main.player.getHitbox())) {
+        //player
+        if(getHitbox().intersects(Main.player.getHitbox()) && !Main.gameover) {
+            switch (type) {
+                case 0: Main.counter.add(3); break;
+                case 1: Main.counter.add(1); break;
+                case 2: Main.counter.add(7); break;
+            }
             delete = true;
         }
     }

@@ -1,6 +1,7 @@
 package gameObjects;
 
 import main.GameObject;
+import main.Main;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
@@ -13,24 +14,27 @@ import org.newdawn.slick.SlickException;
 public class Player extends GameObject {
     private static final int floor_level = 800;
 
-    private final float speed_cap = 15f;
+    private final float speed_cap = 12f;
     private final float friction_hard = speed_cap * 5/27;
     private final float friction_soft = -speed_cap * 1/20;
     private final float jump_speed = -speed_cap;
     private final float jump_bonus = speed_cap * 4/9;
     private final float jump_peak = speed_cap * 4/9;
-    private final float gravity = speed_cap * 1/6;
-    private final float terminal_falling_velocity = speed_cap * 12/9;
+    private float gravity = speed_cap * 1/6;
+    private float terminal_falling_velocity = speed_cap * 12/9;
     private final int jump_length = 10;
     private final int buffer_leniency = 5;
     private final Input input;
 
-    private float speedX, speedY, posX, posY;
+    public static float speedY;
+    public float posY;
+    private float speedX, posX;
     private int jumpTimer, jumpBuffer;
     private boolean grounded;
+    //private byte fat_level;
 
     public Player(Input i) throws SlickException {
-        super(new Image("assets/textures/player0.png", false, 2).getScaledCopy(5), 300, floor_level, 200, 100);
+        super(new Image("assets/textures/player.png", false, 2).getScaledCopy(4), 300, floor_level, 60, 100);
         speedX = speedY = 0;
         input = i;
         posX = 640;
@@ -42,10 +46,18 @@ public class Player extends GameObject {
      * updates the object every frame
      */
     public void update() {
-        buffer();
-        moveX();
+        if(!Main.gameover) {
+            moveX();
+            wallBounce();
+            checkFat();
+            buffer();
+        } else {
+            jumpBuffer = 0;
+            jumpTimer = 0;
+            grounded = false;
+            terminal_falling_velocity = 2.5f * speed_cap;
+        }
         moveY();
-        wallBounce();
         setLoc(Math.round(posX), Math.round(posY));
         moveHitbox();
     }
@@ -113,7 +125,7 @@ public class Player extends GameObject {
         }
         if(speedY > terminal_falling_velocity) speedY = terminal_falling_velocity;
         posY += speedY;
-        if (!grounded && posY > floor_level) {
+        if (!grounded && posY > floor_level && !Main.gameover) {
             grounded = true;
             posY = floor_level;
             speedY = 0;
@@ -121,8 +133,12 @@ public class Player extends GameObject {
         //System.out.println(speedY);
     }
 
+    public void checkFat() {
+
+    }
+
     /**
-     * bounce off when touching the wall
+     * stop on the wall
      */
     private void wallBounce() {
         if(posX < width / 2f) {
