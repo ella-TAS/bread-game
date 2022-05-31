@@ -31,7 +31,6 @@ public class Player extends GameObject {
     private float speedX, posX;
     private int jumpTimer, jumpBuffer;
     private boolean grounded;
-    //private byte fat_level;
 
     public Player(Input i) throws SlickException {
         super(new Image("assets/textures/player.png", false, 2).getScaledCopy(4), 300, floor_level, 60, 100);
@@ -49,7 +48,6 @@ public class Player extends GameObject {
         if(!Main.gameover) {
             moveX();
             wallBounce();
-            checkFat();
             buffer();
         } else {
             jumpBuffer = 0;
@@ -131,10 +129,6 @@ public class Player extends GameObject {
             speedY = 0;
         }
         //System.out.println(speedY);
-    }
-
-    public void checkFat() {
-
     }
 
     /**

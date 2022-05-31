@@ -37,11 +37,13 @@ public class Bomb extends GameObject {
         collide();
     }
 
+    /**
+     * counts down and controls the bomb explosion
+     */
     private void timer() throws SlickException {
         if(ignited) {
             timer--;
             if(timer < 0) {
-                //sound
                 setHitbox(new Circle(getX(), getY(), 120));
                 renewSize();
             }
