@@ -1,18 +1,21 @@
 package gameObjects;
 
 import main.GameObject;
+import main.Item;
 import main.Main;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
 
 /**
- * the bomb item
+ * the bomb item - 1
  * @author Ella
  */
 
-public class Bomb extends GameObject {
+public class Bomb extends GameObject implements Item {
     public boolean delete;
+    public final byte item_type = 1;
+
     private static final int spawn_y = -80;
     private final int floor_level = 800;
     private final float speedY = 5.0f;
@@ -21,9 +24,9 @@ public class Bomb extends GameObject {
     private boolean ignited;
 
     public Bomb(int x) throws SlickException {
-        super(new Image("assets/textures/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 50, 50);
+        super(new Image("assets/textures/items/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 50, 50);
         sprite = 0;
-        timer = 2500000;
+        timer = 250;
         ignited = false;
     }
 
@@ -65,8 +68,8 @@ public class Bomb extends GameObject {
         else if(timer > -15) sprite = -3;
         else if(timer > -20) sprite = -4;
         else delete = true;
-        if(sprite > 0) setImage(new Image("assets/textures/bomb_" + sprite + ".png", false, 2).getScaledCopy(4));
-        else setImage(new Image("assets/textures/bomb_" + sprite + ".png", false, 2).getScaledCopy(10));
+        if(sprite > 0) setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(4));
+        else setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(10));
     }
 
     /**
@@ -94,11 +97,17 @@ public class Bomb extends GameObject {
 
         //bread
         if(timer < 0) {
-            for (Bread b : Main.breadList) {
-                if (getHitbox().intersects(b.getHitbox())) {
-                    delete = true;
+            for (Item e : Main.items) {
+                if(e.getType() == 0) {
+                    if (getHitbox().intersects(e.getHitbox())) {
+                        e.delete();
+                    }
                 }
             }
         }
     }
+
+    public void delete() {delete = true;}
+    public boolean isDelete() {return delete;}
+    public byte getType() {return item_type;}
 }

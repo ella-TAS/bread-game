@@ -27,8 +27,7 @@ public class Main extends BasicGame {
     //gameObjects
     public static Player player;
     public static Counter counter;
-    public static List<Bread> breadList = new LinkedList<>();
-    public static List<Bomb> bombList = new LinkedList<>();
+    public static List<Item> items = new LinkedList<>();
 
     //properties
     public static boolean gameover;
@@ -58,7 +57,7 @@ public class Main extends BasicGame {
         UIstate = 1;
         background = new Image("assets/textures/bg.png", false, 2).getScaledCopy(5);
 
-        bombList.add(new Bomb(300));
+        items.add(new Bomb(300));
     }
 
     /**
@@ -69,27 +68,18 @@ public class Main extends BasicGame {
         //game
         pauseCheck();
         if(UIstate == 1) {
+            //player
             player.update();
             if(gameover && player.posY > 3000) UIstate = 0;
             spawnItems();
 
             //gameObjects
-            for(Bread b : breadList) {
-                if(!b.delete) b.update();
+            for(Item e : items) {
+                if(!e.isDelete()) e.update();
             }
-            for(Bread b : breadList) {
-                if(b.delete) {
-                    breadList.remove(b);
-                    break;
-                }
-            }
-
-            for(Bomb b : bombList) {
-                if(!b.delete) b.update();
-            }
-            for(Bomb b : bombList) {
-                if(b.delete) {
-                    bombList.remove(b);
+            for(Item e : items) {
+                if(e.isDelete()) {
+                    items.remove(e);
                     break;
                 }
             }
@@ -119,17 +109,11 @@ public class Main extends BasicGame {
             if(gameover) player.getImage().getScaledCopy(-1).drawCentered(player.getX(), player.getY());
             else player.getImage().drawCentered(player.getX(), player.getY());
 
-            for(Bread b : breadList) {
-                if(!b.delete) {
-                    g.draw(b.getHitbox());
-                    b.getImage().drawCentered(b.getX(), b.getY());
-                }
-            }
-
-            for(Bomb b : bombList) {
-                if(!b.delete) {
-                    g.draw(b.getHitbox());
-                    b.getImage().drawCentered(b.getX(), b.getY());
+            //items
+            for(Item e : items) {
+                if(!e.isDelete()) {
+                    g.draw(e.getHitbox());
+                    e.getImage().drawCentered(e.getX(), e.getY());
                 }
             }
         }
@@ -153,7 +137,7 @@ public class Main extends BasicGame {
     private void spawnItems() throws SlickException {
         //bread
         if(random.nextFloat() < bread_spawn_rate) {
-            breadList.add(new Bread(random.nextInt(1280), (byte) random.nextInt(3)));
+            items.add(new Bread(random.nextInt(1280), (byte) random.nextInt(3)));
         }
         //bomb
     }
@@ -163,7 +147,7 @@ public class Main extends BasicGame {
      */
     public static void gameover() {
         if(!gameover) {
-            player.speedY = -35;
+            Player.speedY = -35;
             //play sound
         }
         gameover = true;

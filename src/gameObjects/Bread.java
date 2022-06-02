@@ -1,17 +1,20 @@
 package gameObjects;
 
 import main.GameObject;
+import main.Item;
 import main.Main;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 /**
- * the bread item
+ * the bread item - 0
  * @author Ella
  */
 
-public class Bread extends GameObject {
+public class Bread extends GameObject implements Item {
     public boolean delete;
+    public final byte item_type = 0;
+
     private static final int spawn_y = -80;
     private final int floor_level = 800;
     private final float speedY = 5.0f;
@@ -19,7 +22,7 @@ public class Bread extends GameObject {
     private int posY;
 
     public Bread(int x, byte type) throws SlickException {
-        super(new Image("assets/textures/bread_" + type + ".png", false, 2).getScaledCopy(4), x, spawn_y, 0, 0);
+        super(new Image("assets/textures/items/bread_" + type + ".png", false, 2).getScaledCopy(4), x, spawn_y, 0, 0);
         this.type = type;
         delete = false;
         posY = spawn_y;
@@ -63,4 +66,8 @@ public class Bread extends GameObject {
             delete = true;
         }
     }
+
+    public void delete() {delete = true;}
+    public boolean isDelete() {return delete;}
+    public byte getType() {return item_type;}
 }

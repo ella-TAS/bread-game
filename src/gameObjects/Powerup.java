@@ -1,21 +1,25 @@
 package gameObjects;
 
 import main.GameObject;
+import main.Item;
 import main.Main;
+import org.newdawn.slick.Graphics;
 
 /**
- * the powerup item
+ * the powerup item - 2
  * @author Ella
  */
 
-public class Powerup extends GameObject {
+public class PowerUp extends GameObject implements Item {
     public boolean delete;
+    public final byte item_type = 2;
+
     private static int spawn_y = -80;
     private final int floor_level = 800;
     private final float speedY = 5.0f;
     private int posY;
 
-    public Powerup(int x) {
+    public PowerUp(int x) {
         super(null, x, spawn_y, 50);
     }
 
@@ -26,6 +30,13 @@ public class Powerup extends GameObject {
         move();
         moveHitbox();
         collide();
+    }
+
+    /**
+     * renders the object every frame
+     */
+    public void render(Graphics g) {
+        //g.drawImage();
     }
 
     /**
@@ -48,4 +59,8 @@ public class Powerup extends GameObject {
             delete = true;
         }
     }
+
+    public void delete() {delete = true;}
+    public boolean isDelete() {return delete;}
+    public byte getType() {return item_type;}
 }

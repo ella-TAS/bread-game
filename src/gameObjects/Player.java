@@ -33,7 +33,7 @@ public class Player extends GameObject {
     private boolean grounded;
 
     public Player(Input i) throws SlickException {
-        super(new Image("assets/textures/player.png", false, 2).getScaledCopy(4), 300, floor_level, 60, 100);
+        super(new Image("assets/textures/player/player_0.png", false, 2).getScaledCopy(4), 300, floor_level, 60, 150);
         speedX = speedY = 0;
         input = i;
         posX = 640;
