@@ -2,6 +2,7 @@ package gameObjects;
 
 import main.GameObject;
 import main.Main;
+import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
@@ -58,6 +59,15 @@ public class Player extends GameObject {
         moveY();
         setLoc(Math.round(posX), Math.round(posY));
         moveHitbox();
+    }
+
+    /**
+     * renders the object every frame
+     */
+    public void render(Graphics g) {
+        g.draw(getHitbox());
+        if(Main.gameover) getImage().getScaledCopy(-1).drawCentered(getX(), getY());
+        else getImage().drawCentered(getX(), getY());
     }
 
     /**

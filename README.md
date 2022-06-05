@@ -1,7 +1,10 @@
 # Project
 Created for compsci class 2022
+Made by Ella and Poffel in collaboration with Isabelle, Sarah and Anna
 
-#Credits
-Code: EllaTAS and Poffel
-Bread sprites: Poffel
+# Credits
+Code: Ella and Poffel
+Sprites: Poffel
+Player sprites: Isabelle
+Background: https://somepx.itch.io/humble-fonts-gold
 Special thanks: Kataiser

@@ -3,6 +3,8 @@ package gameObjects;
 import main.GameObject;
 import main.Item;
 import main.Main;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
@@ -13,21 +15,25 @@ import org.newdawn.slick.geom.Circle;
  */
 
 public class Bomb extends GameObject implements Item {
-    public boolean delete;
     public final byte item_type = 1;
+    public boolean delete;
 
     private static final int spawn_y = -80;
     private final int floor_level = 800;
-    private final float speedY = 5.0f;
-    private int posY, timer;
+    private int timer;
     private byte sprite;
     private boolean ignited;
+    private final float gravity = 0.2f;
+    private final float terminal_velocity = 6f;
+    private float posY,speedY;
 
     public Bomb(int x) throws SlickException {
         super(new Image("assets/textures/items/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 50, 50);
+        speedY = 2f;
         sprite = 0;
         timer = 250;
         ignited = false;
+        delete = false;
     }
 
     /**
@@ -38,6 +44,15 @@ public class Bomb extends GameObject implements Item {
         if(!ignited) move();
         moveHitbox();
         collide();
+    }
+
+    /**
+     * renders the object every frame
+     */
+    public void render(Graphics g) {
+        g.setColor(Color.white);
+        g.draw(getHitbox());
+        getImage().drawCentered(getX(), getY());
     }
 
     /**
@@ -76,6 +91,8 @@ public class Bomb extends GameObject implements Item {
      * moves the object down
      */
     private void move() {
+        if(speedY < terminal_velocity) speedY += gravity;
+        else speedY = terminal_velocity;
         posY += speedY;
         if(posY > floor_level) {
             posY = floor_level;
@@ -85,7 +102,7 @@ public class Bomb extends GameObject implements Item {
     }
 
     /**
-     * checks collision with the player and breads
+     * checks collision with the player, breads and powerups
      */
     private void collide() {
         //player
@@ -98,7 +115,7 @@ public class Bomb extends GameObject implements Item {
         //bread
         if(timer < 0) {
             for (Item e : Main.items) {
-                if(e.getType() == 0) {
+                if(e.getType() == 0 || e.getType() == 2) {
                     if (getHitbox().intersects(e.getHitbox())) {
                         e.delete();
                     }

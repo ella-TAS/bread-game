@@ -39,7 +39,7 @@ public class GameObject {
     }
 
     /**
-     * for objects with a circular hitbox
+     * for objects with a circle hitbox
      * @param img sprite
      * @param x x position
      * @param y y position
@@ -99,7 +99,7 @@ public class GameObject {
     }
 
     /**
-     * resize the hitbox
+     * resize the hitbox (rectangle)
      * @param width width of the new hitbox
      * @param height height of the new hitbox
      */
@@ -110,7 +110,7 @@ public class GameObject {
     }
 
     /**
-     * resize the hitbox
+     * resize the hitbox (circle)
      * @param radius radius of the new hitbox
      */
     protected void resizeHitbox(int radius) {

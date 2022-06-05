@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import static java.lang.Math.*;
+
 /**
  * main class for handling GameContainer, render and update instance
  * @author Ella
@@ -24,20 +26,24 @@ public class Main extends BasicGame {
     public Input input;
     public Image background;
 
+    //sounds
+    public static Sound sound_eat;
+
     //gameObjects
     public static Player player;
     public static Counter counter;
     public static List<Item> items = new LinkedList<>();
 
     //properties
-    public static boolean gameover;
-
     /**
      * 0 - menu
      * 1 - game
      * 2 - paused
      */
     private byte UIstate;
+    public static boolean gameover;
+    private int last_bread;
+    private boolean bread_direction;
 
     public Main(String title) {
         super(title);
@@ -54,10 +60,15 @@ public class Main extends BasicGame {
         counter = new Counter();
         player = new Player(input);
         gameover = false;
+        sound_eat = new Sound("assets/sounds/eat.ogg");
         UIstate = 1;
+        last_bread = 0;
+        bread_direction = false;
         background = new Image("assets/textures/bg.png", false, 2).getScaledCopy(5);
 
         items.add(new Bomb(300));
+        items.add(new PowerUp(320));
+        items.add(new PowerUp(290));
     }
 
     /**
@@ -105,16 +116,11 @@ public class Main extends BasicGame {
             g.drawString("Weight: " + counter.getScore(), 10, 40);
 
             //player
-            g.draw(player.getHitbox());
-            if(gameover) player.getImage().getScaledCopy(-1).drawCentered(player.getX(), player.getY());
-            else player.getImage().drawCentered(player.getX(), player.getY());
+            player.render(g);
 
             //items
             for(Item e : items) {
-                if(!e.isDelete()) {
-                    g.draw(e.getHitbox());
-                    e.getImage().drawCentered(e.getX(), e.getY());
-                }
+                if(!e.isDelete()) e.render(g);
             }
         }
 
@@ -137,7 +143,19 @@ public class Main extends BasicGame {
     private void spawnItems() throws SlickException {
         //bread
         if(random.nextFloat() < bread_spawn_rate) {
-            items.add(new Bread(random.nextInt(1280), (byte) random.nextInt(3)));
+            double xdelta = 1/sqrt(2*PI) * (exp(-0.5*pow(random.nextFloat()*3,2))) * 600;
+            if(!bread_direction) last_bread += xdelta;
+            else last_bread -= xdelta;
+            if(last_bread > 1200){
+                last_bread -= 2 * xdelta;
+                bread_direction = true;
+            }
+            else if(last_bread < 0){
+                last_bread += 2 * xdelta;
+                bread_direction = false;
+            }
+            info("Bread spawned at " + last_bread);
+            items.add(new Bread(last_bread + 40, (byte) random.nextInt(3)));
         }
         //bomb
     }
