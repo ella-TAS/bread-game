@@ -2,10 +2,7 @@ package gameObjects;
 
 import main.GameObject;
 import main.Main;
-import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Image;
-import org.newdawn.slick.Input;
-import org.newdawn.slick.SlickException;
+import org.newdawn.slick.*;
 
 /**
  * player, movement and controls
@@ -31,15 +28,18 @@ public class Player extends GameObject {
     public float posY;
     private float speedX, posX;
     private int jumpTimer, jumpBuffer;
-    private boolean grounded;
+    private boolean grounded, update_sprite;
+    private byte facing, facing_previous, stepTimer;
 
     public Player(Input i) throws SlickException {
-        super(new Image("assets/textures/player/player_0.png", false, 2).getScaledCopy(4), 300, floor_level, 60, 150);
+        super(new Image("assets/textures/player/player_1.png", false, 2).getScaledCopy(4), 640, floor_level, 60, 150);
         speedX = speedY = 0;
         input = i;
         posX = 640;
         posY = floor_level;
-        grounded = true;
+        grounded = update_sprite = true;
+        facing = facing_previous = 0;
+        stepTimer = 20;
     }
 
     /**
@@ -50,6 +50,9 @@ public class Player extends GameObject {
             moveX();
             wallBounce();
             buffer();
+            stepTimer--;
+            if (stepTimer <= 0) stepTimer = 20;
+            update_sprite = (facing != facing_previous || stepTimer == 10 || stepTimer == 20) && grounded;
         } else {
             jumpBuffer = 0;
             jumpTimer = 0;
@@ -64,8 +67,21 @@ public class Player extends GameObject {
     /**
      * renders the object every frame
      */
-    public void render(Graphics g) {
+    public void render(Graphics g) throws SlickException {
+        g.setColor(Color.white);
         g.draw(getHitbox());
+        Image sprite;
+        if(update_sprite && Main.UIstate == 1) {
+            if (facing == 0) {
+                sprite = new Image("assets/textures/player/player_0.png", false, 2).getScaledCopy(4);
+            } else if (facing == -1) {
+                sprite = new Image("assets/textures/player/player_" + (stepTimer > 10 ? 1 : 2) + ".png", false, 2).getScaledCopy(4);
+            } else {
+                sprite = new Image("assets/textures/player/player_" + (stepTimer > 10 ? 1 : 2) + ".png", false, 2).getScaledCopy(4).getFlippedCopy(true, false);
+            }
+            setImage(sprite);
+            Main.info("Player sprite updated");
+        }
         if(Main.gameover) getImage().getScaledCopy(-1).drawCentered(getX(), getY());
         else getImage().drawCentered(getX(), getY());
     }
@@ -76,6 +92,11 @@ public class Player extends GameObject {
     private void moveX() {
         boolean input_left = input.isKeyDown(Input.KEY_A) || input.isKeyDown(Input.KEY_LEFT);
         boolean input_right = input.isKeyDown(Input.KEY_D) || input.isKeyDown(Input.KEY_RIGHT);
+
+        facing_previous = facing;
+        if(input_right) facing = 1;
+        else if(input_left) facing = -1;
+        else facing = 0;
 
         if (input_right) {
             //held right

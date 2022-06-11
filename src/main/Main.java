@@ -18,6 +18,9 @@ import static java.lang.Math.*;
  */
 
 public class Main extends BasicGame {
+    //debug tools
+    private final boolean frame_advance = false; //press i to frame advance
+
     //constants
     private final float bread_spawn_rate = .1f;
 
@@ -40,7 +43,7 @@ public class Main extends BasicGame {
      * 1 - game
      * 2 - paused
      */
-    private byte UIstate;
+    public static byte UIstate;
     public static boolean gameover;
     private int last_bread;
     private boolean bread_direction;
@@ -78,7 +81,7 @@ public class Main extends BasicGame {
     public void update(GameContainer gc, int arg) throws SlickException {
         //game
         pauseCheck();
-        if(UIstate == 1) {
+        if(UIstate == 1 && (!frame_advance || input.isKeyPressed(Input.KEY_I))) {
             //player
             player.update();
             if(gameover && player.posY > 3000) UIstate = 0;
@@ -101,7 +104,9 @@ public class Main extends BasicGame {
      * renders the game every frame
      */
     @Override
-    public void render(GameContainer gc, Graphics g) {
+    public void render(GameContainer gc, Graphics g) throws SlickException {
+        g.setColor(Color.white);
+
         //menu
         if(UIstate == 0) {
             g.drawString("Menu", 300, 300);
@@ -154,7 +159,6 @@ public class Main extends BasicGame {
                 last_bread += 2 * xdelta;
                 bread_direction = false;
             }
-            info("Bread spawned at " + last_bread);
             items.add(new Bread(last_bread + 40, (byte) random.nextInt(3)));
         }
         //bomb
@@ -175,7 +179,7 @@ public class Main extends BasicGame {
      * logs a line to the console using the Slick2D format
      * @param info the info to be printed out
      */
-    public void info(String info) {
+    public static void info(String info) {
         System.out.println(new Date() + " INFO:" + info);
     }
 
