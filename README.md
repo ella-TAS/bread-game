@@ -1,6 +1,6 @@
 # Project
 Created for compsci class 2022  
-Made by Ella and Poffel in collaboration with Isabelle, Sarah and Anna
+Made by Ella and Poffel in collaboration with Isabelle and Sarah
 
 # Credits
 Code: Ella and Poffel  
