@@ -36,6 +36,7 @@ public class Main extends BasicGame {
     public static Player player;
     public static Counter counter;
     public static List<Item> items = new LinkedList<>();
+    public Boss boss;
 
     //properties
     /**
@@ -46,7 +47,7 @@ public class Main extends BasicGame {
     public static byte UIstate;
     public static boolean gameover;
     private int last_bread;
-    private boolean bread_direction;
+    private boolean bread_direction, isBoss;
 
     public Main(String title) {
         super(title);
@@ -72,6 +73,9 @@ public class Main extends BasicGame {
         items.add(new Bomb(300));
         items.add(new PowerUp(320));
         items.add(new PowerUp(290));
+
+        boss = new Boss();
+        isBoss = true;
     }
 
     /**
@@ -97,6 +101,9 @@ public class Main extends BasicGame {
                     break;
                 }
             }
+
+            //boss
+            if(isBoss) boss.update();
         }
     }
 
@@ -127,6 +134,9 @@ public class Main extends BasicGame {
             for(Item e : items) {
                 if(!e.isDelete()) e.render(g);
             }
+
+            //boss
+            boss.render(g);
         }
 
         //paused

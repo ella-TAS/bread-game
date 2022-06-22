@@ -52,7 +52,7 @@ public class Player extends GameObject {
             buffer();
             stepTimer--;
             if (stepTimer <= 0) stepTimer = 20;
-            update_sprite = (facing != facing_previous || stepTimer == 10 || stepTimer == 20) && grounded;
+            update_sprite = facing != facing_previous || stepTimer == 10 || stepTimer == 20;
         } else {
             jumpBuffer = 0;
             jumpTimer = 0;
@@ -80,7 +80,6 @@ public class Player extends GameObject {
                 sprite = new Image("assets/textures/player/player_" + (stepTimer > 10 ? 1 : 2) + ".png", false, 2).getScaledCopy(4).getFlippedCopy(true, false);
             }
             setImage(sprite);
-            Main.info("Player sprite updated");
         }
         if(Main.gameover) getImage().getScaledCopy(-1).drawCentered(getX(), getY());
         else getImage().drawCentered(getX(), getY());
