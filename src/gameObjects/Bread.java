@@ -78,7 +78,7 @@ public class Bread extends GameObject implements Item {
                 case 1: Main.counter.add(1); break;
                 case 2: Main.counter.add(7); break;
             }
-            Main.sound_eat.play();
+            Main.sound_eat.play(1 - Main.random.nextFloat()/3 , Main.sfxVolume/10f);
             delete = true;
         }
     }

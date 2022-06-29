@@ -2,6 +2,8 @@ package main;
 
 import gameObjects.*;
 import org.newdawn.slick.*;
+import org.newdawn.slick.font.effects.ColorEffect;
+import org.newdawn.slick.util.ResourceLoader;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -25,9 +27,14 @@ public class Main extends BasicGame {
     private final float bread_spawn_rate = .1f;
 
     //util
-    public Random random;
+    public static Random random;
     public Input input;
-    public Image background;
+    public UnicodeFont hopeGold;
+
+    //const sprites
+    private Image background;
+    private Image fade;
+    private Image arrow;
 
     //sounds
     public static Sound sound_eat;
@@ -39,17 +46,18 @@ public class Main extends BasicGame {
     public Boss boss;
 
     //properties
-    /**
+    /** UIstate
      * 0 - menu
      * 1 - game
      * 2 - paused
      */
-    public static byte UIstate;
+    public static byte UIstate, sfxVolume;
     public static boolean gameover;
     private int last_bread;
     private boolean bread_direction, isBoss;
+    private byte menuSelect;
 
-    public Main(String title) {
+    public Main(String title) throws SlickException {
         super(title);
     }
 
@@ -59,16 +67,30 @@ public class Main extends BasicGame {
     @Override
     public void init(GameContainer gc) throws SlickException {
         info("Starting game");
+        background = new Image("assets/textures/bg.png", false, 2).getScaledCopy(5);
+        fade = new Image("assets/textures/fade.png", false, 2).getScaledCopy(1280);
+        arrow = new Image("assets/textures/arrow.png", false, 2).getScaledCopy(3);
         input = gc.getInput();
         random = new Random();
         counter = new Counter();
         player = new Player(input);
-        gameover = false;
+        gameover = bread_direction = false;
+        sfxVolume = 10;
         sound_eat = new Sound("assets/sounds/eat.ogg");
-        UIstate = 1;
+        UIstate = menuSelect = 0;
         last_bread = 0;
-        bread_direction = false;
-        background = new Image("assets/textures/bg.png", false, 2).getScaledCopy(5);
+
+        //font
+        try {
+            java.awt.Font UIFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, ResourceLoader.getResourceAsStream("assets/fonts/hopeGold.ttf"));
+            UIFont = UIFont.deriveFont(java.awt.Font.PLAIN, 64.f);
+            hopeGold = new UnicodeFont(UIFont);
+            hopeGold.getEffects().add(new ColorEffect(java.awt.Color.white));
+            hopeGold.addAsciiGlyphs();
+            hopeGold.loadGlyphs();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         items.add(new Bomb(300));
         items.add(new PowerUp(320));
@@ -84,8 +106,9 @@ public class Main extends BasicGame {
     @Override
     public void update(GameContainer gc, int arg) throws SlickException {
         //game
-        pauseCheck();
         if(UIstate == 1 && (!frame_advance || input.isKeyPressed(Input.KEY_I))) {
+            if(input.isKeyPressed(Input.KEY_ESCAPE)) UIstate = (byte) (-UIstate + 3);
+
             //player
             player.update();
             if(gameover && player.posY > 3000) UIstate = 0;
@@ -105,6 +128,11 @@ public class Main extends BasicGame {
             //boss
             if(isBoss) boss.update();
         }
+
+        //menu
+        else if(UIstate == 0) {
+            menuing(gc);
+        }
     }
 
     /**
@@ -116,7 +144,21 @@ public class Main extends BasicGame {
 
         //menu
         if(UIstate == 0) {
-            g.drawString("Menu", 300, 300);
+            hopeGold.drawString(586, 200, "Menu", Color.cyan);
+            hopeGold.drawString(580, 300, "Start");
+            hopeGold.drawString(640 - hopeGold.getWidth("SFX Volume: " + sfxVolume/10f)/2f, 400, "SFX Volume: " + sfxVolume/10f);
+            hopeGold.drawString(594, 500, "Exit");
+            switch(menuSelect) {
+                case 0:
+                    arrow.drawCentered(540, 330);
+                    break;
+                case 1:
+                    arrow.drawCentered(600 - hopeGold.getWidth("SFX Volume: " + sfxVolume/10f)/2f, 430);
+                    break;
+                case 2:
+                    arrow.drawCentered(554, 530);
+                    break;
+            }
         }
 
         //game
@@ -125,7 +167,7 @@ public class Main extends BasicGame {
             g.drawImage(background, 0, 0);
 
             //score
-            g.drawString("Weight: " + counter.getScore(), 10, 40);
+            hopeGold.drawString(10, 40, "Weight: " + counter.getScore(), new Color(0, 100, 12));
 
             //player
             player.render(g);
@@ -141,17 +183,8 @@ public class Main extends BasicGame {
 
         //paused
         if(UIstate == 2) {
-            g.drawString("Paused", 640, 20);
-        }
-    }
-
-    /**
-     * pauses or unpauses the game when Esc is pressed
-     */
-    private void pauseCheck() {
-        if(input.isKeyPressed(Input.KEY_ESCAPE)) {
-            if (UIstate == 0) return;
-            UIstate = (byte) (-UIstate + 3);
+            fade.draw();
+            hopeGold.drawString(562, 20, "Paused", Color.orange);
         }
     }
 
@@ -172,6 +205,40 @@ public class Main extends BasicGame {
             items.add(new Bread(last_bread + 40, (byte) random.nextInt(3)));
         }
         //bomb
+    }
+
+    /**
+     * handles the menu navigation
+     */
+    private void menuing(GameContainer gc) throws SlickException {
+        if(input.isKeyPressed(Input.KEY_DOWN) || input.isKeyPressed(Input.KEY_S)) {
+            if(menuSelect == 2) menuSelect = 0;
+            else menuSelect++;
+        } else if(input.isKeyPressed(Input.KEY_UP) || input.isKeyPressed(Input.KEY_W)) {
+            if(menuSelect == 0) menuSelect = 2;
+            else menuSelect--;
+        }
+        switch(menuSelect) {
+            case 0:
+                if(input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE)) {
+                    init(gc);
+                    UIstate = 1;
+                }
+                break;
+            case 1:
+                if(sfxVolume < 10 && (input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_D))){
+                    sfxVolume += 1;
+                    sound_eat.play(1f, sfxVolume/10f);
+                }
+                else if(sfxVolume > 1 && (input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_A))){
+                    sfxVolume -= 1;
+                    sound_eat.play(1f, sfxVolume/10f);
+                }
+                break;
+            case 2:
+                if(input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE)) System.exit(0);
+                break;
+        }
     }
 
     /**
