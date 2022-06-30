@@ -105,9 +105,10 @@ public class Main extends BasicGame {
      */
     @Override
     public void update(GameContainer gc, int arg) throws SlickException {
+        if(input.isKeyPressed(Input.KEY_ESCAPE) && UIstate != 0) UIstate = (byte) (-UIstate + 3);
+
         //game
         if(UIstate == 1 && (!frame_advance || input.isKeyPressed(Input.KEY_I))) {
-            if(input.isKeyPressed(Input.KEY_ESCAPE)) UIstate = (byte) (-UIstate + 3);
 
             //player
             player.update();
