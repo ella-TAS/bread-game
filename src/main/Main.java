@@ -5,6 +5,7 @@ import org.newdawn.slick.*;
 import org.newdawn.slick.font.effects.ColorEffect;
 import org.newdawn.slick.util.ResourceLoader;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +26,11 @@ public class Main extends BasicGame {
 
     //constants
     private final float bread_spawn_rate = .1f;
+    private final float bomb_spawn_rate = .001f;
 
     //util
     public static Random random;
+    public static AppGameContainer app;
     public Input input;
     public UnicodeFont hopeGold;
 
@@ -53,9 +56,9 @@ public class Main extends BasicGame {
      */
     public static byte UIstate, sfxVolume;
     public static boolean gameover;
+    private static byte menuSelect;
     private int last_bread;
     private boolean bread_direction, isBoss;
-    private byte menuSelect;
 
     public Main(String title) throws SlickException {
         super(title);
@@ -92,11 +95,11 @@ public class Main extends BasicGame {
             e.printStackTrace();
         }
 
-        items.add(new Bomb(300));
-        items.add(new PowerUp(320));
-        items.add(new PowerUp(290));
-
-        boss = new Boss();
+        try {
+            boss = new Boss();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
         isBoss = true;
     }
 
@@ -105,14 +108,16 @@ public class Main extends BasicGame {
      */
     @Override
     public void update(GameContainer gc, int arg) throws SlickException {
-        if(input.isKeyPressed(Input.KEY_ESCAPE) && UIstate != 0) UIstate = (byte) (-UIstate + 3);
+        if(input.isKeyPressed(Input.KEY_ESCAPE) && UIstate != 0) {
+            UIstate = (byte) (-UIstate + 3);
+            menuSelect = 0;
+        }
 
         //game
         if(UIstate == 1 && (!frame_advance || input.isKeyPressed(Input.KEY_I))) {
 
             //player
             player.update();
-            if(gameover && player.posY > 3000) UIstate = 0;
             spawnItems();
 
             //gameObjects
@@ -131,9 +136,7 @@ public class Main extends BasicGame {
         }
 
         //menu
-        else if(UIstate == 0) {
-            menuing(gc);
-        }
+        menuing(gc);
     }
 
     /**
@@ -145,7 +148,7 @@ public class Main extends BasicGame {
 
         //menu
         if(UIstate == 0) {
-            hopeGold.drawString(586, 200, "Menu", Color.cyan);
+            hopeGold.drawString(586, 200, "Menu", Color.orange);
             hopeGold.drawString(580, 300, "Start");
             hopeGold.drawString(640 - hopeGold.getWidth("SFX Volume: " + sfxVolume/10f)/2f, 400, "SFX Volume: " + sfxVolume/10f);
             hopeGold.drawString(594, 500, "Exit");
@@ -185,7 +188,25 @@ public class Main extends BasicGame {
         //paused
         if(UIstate == 2) {
             fade.draw();
-            hopeGold.drawString(562, 20, "Paused", Color.orange);
+            hopeGold.drawString(562, 200, "Paused", Color.orange);
+            hopeGold.drawString(562, 300, "Resume");
+            hopeGold.drawString(640 - hopeGold.getWidth("SFX Volume: " + sfxVolume/10f)/2f, 400, "SFX Volume: " + sfxVolume/10f);
+            hopeGold.drawString(462, 500, "Return to Menu");
+            hopeGold.drawString(594, 600, "Exit");
+            switch(menuSelect) {
+                case 0:
+                    arrow.drawCentered(522, 330);
+                    break;
+                case 1:
+                    arrow.drawCentered(600 - hopeGold.getWidth("SFX Volume: " + sfxVolume/10f)/2f, 430);
+                    break;
+                case 2:
+                    arrow.drawCentered(422, 530);
+                    break;
+                case 3:
+                    arrow.drawCentered(554, 630);
+                    break;
+            }
         }
     }
 
@@ -205,41 +226,104 @@ public class Main extends BasicGame {
             }
             items.add(new Bread(last_bread + 40, (byte) random.nextInt(3)));
         }
+
         //bomb
+        if(random.nextFloat() < bomb_spawn_rate) {
+            items.add(new Bomb(random.nextInt(1200)+40));
+        }
     }
 
     /**
      * handles the menu navigation
      */
     private void menuing(GameContainer gc) throws SlickException {
-        if(input.isKeyPressed(Input.KEY_DOWN) || input.isKeyPressed(Input.KEY_S)) {
-            if(menuSelect == 2) menuSelect = 0;
-            else menuSelect++;
-        } else if(input.isKeyPressed(Input.KEY_UP) || input.isKeyPressed(Input.KEY_W)) {
-            if(menuSelect == 0) menuSelect = 2;
-            else menuSelect--;
+        boolean input_d = input.isKeyPressed(Input.KEY_DOWN) || input.isKeyPressed(Input.KEY_S);
+        boolean input_u = input.isKeyPressed(Input.KEY_UP) || input.isKeyPressed(Input.KEY_W);
+        boolean input_r = input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_D);
+        boolean input_l = input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_A);
+        boolean input_yes = input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE);
+
+        //menu
+        if(UIstate == 0) {
+            if(input_d) {
+                if(menuSelect == 2) menuSelect = 0;
+                else menuSelect++;
+            } else if(input_u) {
+                if(menuSelect == 0) menuSelect = 2;
+                else menuSelect--;
+            }
+            switch(menuSelect) {
+                case 0:
+                    if(input_yes) {
+                        reset(gc);
+                    }
+                    break;
+                case 1:
+                    sfxControl(input_r, input_l);
+                    break;
+                case 2:
+                    if(input_yes) app.exit();
+                    break;
+            }
         }
-        switch(menuSelect) {
-            case 0:
-                if(input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE)) {
-                    init(gc);
-                    UIstate = 1;
-                }
-                break;
-            case 1:
-                if(sfxVolume < 10 && (input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_D))){
-                    sfxVolume += 1;
-                    sound_eat.play(1f, sfxVolume/10f);
-                }
-                else if(sfxVolume > 1 && (input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_A))){
-                    sfxVolume -= 1;
-                    sound_eat.play(1f, sfxVolume/10f);
-                }
-                break;
-            case 2:
-                if(input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE)) System.exit(0);
-                break;
+
+        //paused
+        else if(UIstate == 2) {
+            if(input_d) {
+                if(menuSelect == 3) menuSelect = 0;
+                else menuSelect++;
+            } else if(input_u) {
+                if(menuSelect == 0) menuSelect = 3;
+                else menuSelect--;
+            }
+            switch(menuSelect) {
+                case 0:
+                    if(input_yes) UIstate = 1;
+                    break;
+                case 1:
+                    sfxControl(input_r, input_l);
+                    break;
+                case 2:
+                    if(input_yes) menu();
+                    break;
+                case 3:
+                    if(input_yes) app.exit();
+                    break;
+            }
         }
+    }
+
+    /**
+     * raises or lowers the sfx volume in the menu
+     * @param input_r whether right is pressed
+     * @param input_l whether left is pressed
+     */
+    private void sfxControl(boolean input_r, boolean input_l) {
+        if(sfxVolume < 10 && input_r){
+            sfxVolume += 1;
+            sound_eat.play(1f, sfxVolume/10f);
+        }
+        else if(sfxVolume > 1 && input_l) {
+            sfxVolume -= 1;
+            sound_eat.play(1f, sfxVolume/10f);
+        }
+    }
+
+    /**
+     * returns to menu
+     */
+    public static void menu() {
+        UIstate = 0;
+        menuSelect = 0;
+    }
+
+    /**
+     * resets and restarts the game
+     */
+    private void reset(GameContainer gc) throws SlickException {
+        init(gc);
+        UIstate = 1;
+        items.removeAll(items);
     }
 
     /**
@@ -271,12 +355,20 @@ public class Main extends BasicGame {
     }
 
     /**
+     * gives the AppGameContainer to the Main class
+     */
+    public static void setApp(AppGameContainer a) {
+        app = a;
+    }
+
+    /**
      * starts the game engine
      */
     public static void main(String[] args) {
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println(new Date() + " INFO:Stopping Game Engine")));
             AppGameContainer app = new AppGameContainer(new Main("Brojeggd Brohd und Brödchen"));
+            Main.setApp(app);
             app.setDisplayMode(1280,920, false);
             app.setTargetFrameRate(60);
             app.setVSync(true);

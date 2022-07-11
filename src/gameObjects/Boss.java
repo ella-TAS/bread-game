@@ -4,6 +4,12 @@ import main.GameObject;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.particles.ConfigurableEmitter;
+import org.newdawn.slick.particles.ParticleEmitter;
+import org.newdawn.slick.particles.ParticleIO;
+import org.newdawn.slick.particles.ParticleSystem;
+
+import java.io.IOException;
 
 /**
  * the furnace boss enemy
@@ -13,8 +19,10 @@ import org.newdawn.slick.SlickException;
 public class Boss extends GameObject {
     private boolean approach, facing;
     private float posX, posY;
+    private ParticleSystem pSystem;
+    private ParticleEmitter pEmitter;
 
-    public Boss() throws SlickException {
+    public Boss() throws SlickException, IOException {
         super(new Image("assets/textures/boss/boss_0.png", false, 2).getScaledCopy(5), 640, -40, 100, 100);
         approach = true;
         posX = 640;

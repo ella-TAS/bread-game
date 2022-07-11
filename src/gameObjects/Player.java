@@ -45,7 +45,7 @@ public class Player extends GameObject {
     /**
      * updates the object every frame
      */
-    public void update() {
+    public void update() throws SlickException {
         if(!Main.gameover) {
             moveX();
             wallBounce();
@@ -58,6 +58,7 @@ public class Player extends GameObject {
             jumpTimer = 0;
             grounded = false;
             terminal_falling_velocity = 2.5f * speed_cap;
+            if(posY > 3000) Main.menu();
         }
         moveY();
         setLoc(Math.round(posX), Math.round(posY));
