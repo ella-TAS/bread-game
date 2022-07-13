@@ -1,0 +1,13 @@
+@startuml
+
+(*) -->"Startbildschirm"
+-->[Startpunkt auswählen] "im Spiel"
+-> (*)
+
+"im Spiel" -->[klicken] "im Spiel"
+-->[nächster Raum] "im Spiel"
+
+"im Spiel" -->[escape] "Menü"
+-->[zurück ins Spiel] "im Spiel"
+
+@enduml

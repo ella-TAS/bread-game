@@ -5,6 +5,8 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
 
+import java.io.IOException;
+
 /**
  * Interface to manage all items within one list
  * @author Ella
@@ -18,9 +20,10 @@ public interface Item {
      */
     byte getType();
     boolean isDelete();
-    void update() throws SlickException;
+    void update(int delta) throws SlickException, IOException;
     void render(Graphics g);
     void delete();
+    void action();
     Shape getHitbox();
     Image getImage();
     int getX();

@@ -25,8 +25,8 @@ public class Main extends BasicGame {
     private final boolean frame_advance = false; //press i to frame advance
 
     //constants
-    private final float bread_spawn_rate = .1f;
-    private final float bomb_spawn_rate = .001f;
+    private final float bread_spawn_rate = .09f;
+    private final float bomb_spawn_rate = .003f;
 
     //util
     public static Random random;
@@ -44,7 +44,6 @@ public class Main extends BasicGame {
 
     //gameObjects
     public static Player player;
-    public static Counter counter;
     public static List<Item> items = new LinkedList<>();
     public Boss boss;
 
@@ -56,11 +55,12 @@ public class Main extends BasicGame {
      */
     public static byte UIstate, sfxVolume;
     public static boolean gameover;
+    private static int score, displayRed;
     private static byte menuSelect;
     private int last_bread;
     private boolean bread_direction, isBoss;
 
-    public Main(String title) throws SlickException {
+    public Main(String title) {
         super(title);
     }
 
@@ -75,13 +75,13 @@ public class Main extends BasicGame {
         arrow = new Image("assets/textures/arrow.png", false, 2).getScaledCopy(3);
         input = gc.getInput();
         random = new Random();
-        counter = new Counter();
         player = new Player(input);
-        gameover = bread_direction = false;
+        gameover = bread_direction = isBoss = false;
         sfxVolume = 10;
         sound_eat = new Sound("assets/sounds/eat.ogg");
         UIstate = menuSelect = 0;
-        last_bread = 0;
+        score = displayRed = 0;
+        last_bread = random.nextInt(1280);
 
         //font
         try {
@@ -94,20 +94,13 @@ public class Main extends BasicGame {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        try {
-            boss = new Boss();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-        isBoss = true;
     }
 
     /**
      * updates the game every frame
      */
     @Override
-    public void update(GameContainer gc, int arg) throws SlickException {
+    public void update(GameContainer gc, int delta) throws SlickException {
         if(input.isKeyPressed(Input.KEY_ESCAPE) && UIstate != 0) {
             UIstate = (byte) (-UIstate + 3);
             menuSelect = 0;
@@ -118,11 +111,22 @@ public class Main extends BasicGame {
 
             //player
             player.update();
-            spawnItems();
+            try {
+                spawnItems();
+                if(!isBoss) bossCheck();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             //gameObjects
             for(Item e : items) {
-                if(!e.isDelete()) e.update();
+                if(!e.isDelete()) {
+                    try {
+                        e.update(delta);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
             for(Item e : items) {
                 if(e.isDelete()) {
@@ -131,8 +135,11 @@ public class Main extends BasicGame {
                 }
             }
 
+            //display
+            if(displayRed > 0) displayRed--;
+
             //boss
-            if(isBoss) boss.update();
+            if(isBoss) boss.update(delta);
         }
 
         //menu
@@ -170,9 +177,6 @@ public class Main extends BasicGame {
             //background
             g.drawImage(background, 0, 0);
 
-            //score
-            hopeGold.drawString(10, 40, "Weight: " + counter.getScore(), new Color(0, 100, 12));
-
             //player
             player.render(g);
 
@@ -181,8 +185,11 @@ public class Main extends BasicGame {
                 if(!e.isDelete()) e.render(g);
             }
 
+            //display
+            hopeGold.drawString(10, 40, "Score: " + score, displayRed > 0 || score < 0 ? Color.red : new Color(25, 150, 50));
+
             //boss
-            boss.render(g);
+            if(isBoss) boss.render(g);
         }
 
         //paused
@@ -210,7 +217,11 @@ public class Main extends BasicGame {
         }
     }
 
-    private void spawnItems() throws SlickException {
+    /**
+     * handles the randomized spawning of items
+     * @author Paul
+     */
+    private void spawnItems() throws SlickException, IOException {
         //bread
         if(random.nextFloat() < bread_spawn_rate) {
             double xdelta = 1/sqrt(2*PI) * (exp(-0.5*pow(random.nextFloat()*3,2))) * 600;
@@ -230,6 +241,16 @@ public class Main extends BasicGame {
         //bomb
         if(random.nextFloat() < bomb_spawn_rate) {
             items.add(new Bomb(random.nextInt(1200)+40));
+        }
+    }
+
+    /**
+     * spawns the boss if the requirements are fulfilled
+     */
+    private void bossCheck() throws SlickException, IOException {
+        if(score > 200) {
+            boss = new Boss();
+            isBoss = true;
         }
     }
 
@@ -291,6 +312,15 @@ public class Main extends BasicGame {
                     break;
             }
         }
+    }
+
+    /**
+     * increase or decrease the score
+     */
+    public static void addScore(int i) {
+        score += i;
+        if(i < 0) displayRed = 20;
+        if(score < -200) gameover();
     }
 
     /**

@@ -3,11 +3,14 @@ package gameObjects;
 import main.GameObject;
 import main.Item;
 import main.Main;
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Circle;
+import org.newdawn.slick.particles.ConfigurableEmitter;
+import org.newdawn.slick.particles.ParticleIO;
+import org.newdawn.slick.particles.ParticleSystem;
+
+import java.io.IOException;
 
 /**
  * the bomb item - 1
@@ -20,50 +23,56 @@ public class Bomb extends GameObject implements Item {
 
     private static final int spawn_y = -80;
     private final int floor_level = 800;
-    private int timer;
+    public int timer;
     private byte sprite;
     private boolean ignited;
     private final float gravity = 0.2f;
     private final float terminal_velocity = 6f;
     private float posY,speedY;
+    private ParticleSystem pSystem;
+    private ConfigurableEmitter pEmitter;
 
-    public Bomb(int x) throws SlickException {
-        super(new Image("assets/textures/items/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 50, 50);
+    public Bomb(int x) throws SlickException, IOException {
+        super(new Image("assets/textures/items/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 25);
         speedY = 2f;
         sprite = 0;
         timer = 250;
+        posY = spawn_y;
         ignited = false;
         delete = false;
+        pSystem = new ParticleSystem(new Image("assets/textures/particles/smoke.png", false, 2), 1000);
+        pEmitter = ParticleIO.loadEmitter("assets/xmls/smoke.xml");
+        pEmitter.setPosition(x, 765);
     }
 
     /**
      * updates the object every frame
      */
-    public void update() throws SlickException {
+    public void update(int delta) throws SlickException, IOException {
         timer();
         if(!ignited) move();
         moveHitbox();
         collide();
+        pSystem.update(delta);
     }
 
     /**
      * renders the object every frame
      */
     public void render(Graphics g) {
-        g.setColor(Color.white);
-        g.draw(getHitbox());
+        //g.draw(getHitbox());
         getImage().drawCentered(getX(), getY());
+        pSystem.render();
     }
 
     /**
      * counts down and controls the bomb explosion
      */
-    private void timer() throws SlickException {
+    private void timer() throws SlickException, IOException {
         if(ignited) {
             timer--;
             if(timer < 0) {
-                setHitbox(new Circle(getX(), getY(), 120));
-                renewSize();
+                resizeHitbox(120);
             }
             spriteMachine();
         }
@@ -72,7 +81,7 @@ public class Bomb extends GameObject implements Item {
     /**
      * changes the sprite dependent on the timer
      */
-    private void spriteMachine() throws SlickException {
+    private void spriteMachine() throws SlickException, IOException {
         if(timer > 200) sprite = 1;
         else if(timer > 150) sprite = 2;
         else if(timer > 100) sprite = 3;
@@ -83,8 +92,13 @@ public class Bomb extends GameObject implements Item {
         else if(timer > -15) sprite = -3;
         else if(timer > -20) sprite = -4;
         else delete = true;
-        if(sprite > 0) setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(4));
-        else setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(10));
+        if(sprite > 0){
+            setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(4));
+            pEmitter.setPosition(x+timer/8f, 765, false);
+        }
+        else {
+            setImage(new Image("assets/textures/items/bomb_" + sprite + ".png", false, 2).getScaledCopy(10));
+        }
     }
 
     /**
@@ -97,8 +111,16 @@ public class Bomb extends GameObject implements Item {
         if(posY > floor_level) {
             posY = floor_level;
             ignited = true;
+            pSystem.addEmitter(pEmitter);
         }
         setLoc(getX(), Math.round(posY));
+    }
+
+    /**
+     * explodes the bomb instantly
+     */
+    public void action() {
+        timer = -2;
     }
 
     /**
@@ -116,9 +138,18 @@ public class Bomb extends GameObject implements Item {
         if(timer < 0) {
             for (Item e : Main.items) {
                 if(e.getType() == 0 || e.getType() == 2) {
-                    if (getHitbox().intersects(e.getHitbox())) {
+                    if(getHitbox().intersects(e.getHitbox())) {
                         e.delete();
                     }
+                }
+            }
+        }
+
+        //bomb
+        if(timer == -1) {
+            for (Item e : Main.items) {
+                if(e.getType() == 1 && e != this) {
+                    if(getHitbox().intersects(e.getHitbox())) e.action();
                 }
             }
         }

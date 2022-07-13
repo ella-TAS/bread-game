@@ -18,7 +18,7 @@ public class Player extends GameObject {
     private final float jump_speed = -speed_cap;
     private final float jump_bonus = speed_cap * 4/9;
     private final float jump_peak = speed_cap * 4/9;
-    private float gravity = speed_cap * 1/6;
+    private final float gravity = speed_cap * 1/6;
     private float terminal_falling_velocity = speed_cap * 12/9;
     private final int jump_length = 10;
     private final int buffer_leniency = 5;
@@ -32,7 +32,7 @@ public class Player extends GameObject {
     private byte facing, facing_previous, stepTimer;
 
     public Player(Input i) throws SlickException {
-        super(new Image("assets/textures/player/player_1.png", false, 2).getScaledCopy(4), 640, floor_level, 60, 150);
+        super(new Image("assets/textures/player/player_1.png", false, 2).getScaledCopy(4), 640, floor_level, 50, 140);
         speedX = speedY = 0;
         input = i;
         posX = 640;
@@ -45,7 +45,7 @@ public class Player extends GameObject {
     /**
      * updates the object every frame
      */
-    public void update() throws SlickException {
+    public void update() {
         if(!Main.gameover) {
             moveX();
             wallBounce();
@@ -69,8 +69,7 @@ public class Player extends GameObject {
      * renders the object every frame
      */
     public void render(Graphics g) throws SlickException {
-        g.setColor(Color.white);
-        g.draw(getHitbox());
+        //g.draw(getHitbox());
         Image sprite;
         if(update_sprite && Main.UIstate == 1) {
             if (facing == 0) {

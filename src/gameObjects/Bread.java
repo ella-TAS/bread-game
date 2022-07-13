@@ -3,7 +3,6 @@ package gameObjects;
 import main.GameObject;
 import main.Item;
 import main.Main;
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
@@ -31,9 +30,15 @@ public class Bread extends GameObject implements Item {
         posY = spawn_y;
         speedY = 0.5f;
         switch (type) {
-            case 0: resizeHitbox(100, 100); break;
-            case 1: resizeHitbox(80, 150); break;
-            case 2: resizeHitbox(120, 50); break;
+            case 0: resizeHitbox(50, 50); break;
+            case 1:
+                resizeHitbox(60, 20);
+                offY = 20;
+                break;
+            case 2:
+                resizeHitbox(60, 30);
+                offY = 16;
+            break;
         }
         moveHitbox();
     }
@@ -41,7 +46,7 @@ public class Bread extends GameObject implements Item {
     /**
      * updates the object every frame
      */
-    public void update() {
+    public void update(int delta) {
         move();
         moveHitbox();
         collide();
@@ -51,9 +56,8 @@ public class Bread extends GameObject implements Item {
      * renders the object every frame
      */
     public void render(Graphics g) {
-        g.setColor(Color.white);
-        g.draw(getHitbox());
         getImage().drawCentered(getX(), getY());
+        //g.draw(getHitbox());
     }
 
     /**
@@ -63,7 +67,14 @@ public class Bread extends GameObject implements Item {
         if(speedY < terminal_velocity) speedY += gravity;
         else speedY = terminal_velocity;
         posY += speedY;
-        if(posY > floor_level) posY = floor_level;
+        if(posY > floor_level){
+            delete = true;
+            switch (type) {
+                case 0: Main.addScore(-7); break;
+                case 1: Main.addScore(-3); break;
+                case 2: Main.addScore(-10); break;
+            }
+        }
         setLoc(getX(), Math.round(posY));
     }
 
@@ -74,9 +85,9 @@ public class Bread extends GameObject implements Item {
         //player
         if(getHitbox().intersects(Main.player.getHitbox()) && !Main.gameover) {
             switch (type) {
-                case 0: Main.counter.add(3); break;
-                case 1: Main.counter.add(1); break;
-                case 2: Main.counter.add(7); break;
+                case 0: Main.addScore(3); break;
+                case 1: Main.addScore(1); break;
+                case 2: Main.addScore(7); break;
             }
             Main.sound_eat.play(1 - Main.random.nextFloat()/3 , Main.sfxVolume/10f);
             delete = true;
@@ -86,4 +97,5 @@ public class Bread extends GameObject implements Item {
     public void delete() {delete = true;}
     public boolean isDelete() {return delete;}
     public byte getType() {return item_type;}
+    public void action() {}
 }

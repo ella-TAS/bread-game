@@ -15,7 +15,7 @@ public class PowerUp extends GameObject implements Item {
     public final byte item_type = 2;
     public boolean delete;
 
-    private static int spawn_y = -80;
+    private final static int spawn_y = -80;
     private final int floor_level = 800;
     private final float gravity = 0.2f;
     private final float terminal_velocity = 6f;
@@ -31,7 +31,7 @@ public class PowerUp extends GameObject implements Item {
     /**
      * updates the object every frame
      */
-    public void update() {
+    public void update(int delta) {
         move();
         moveHitbox();
         collide();
@@ -70,4 +70,5 @@ public class PowerUp extends GameObject implements Item {
     public void delete() {delete = true;}
     public boolean isDelete() {return delete;}
     public byte getType() {return item_type;}
+    public void action() {}
 }

@@ -85,7 +85,7 @@ public class GameObject {
      * update the hitbox position based on the object position
      */
     protected void moveHitbox() {
-        if(poly != 1) {hitbox.setLocation(x - width/2 + offX, y - height/2 + offY);}
+        if(poly != 1) {hitbox.setLocation(x - width/2f + offX, y - height/2f + offY);}
         else if(!center) {hitbox.setLocation(x-width, y-height);}
         else {hitbox.setLocation(x, y);}
     }
