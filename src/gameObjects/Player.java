@@ -21,7 +21,7 @@ public class Player extends GameObject {
     private final float gravity = speed_cap * 1/6;
     private float terminal_falling_velocity = speed_cap * 12/9;
     private final int jump_length = 10;
-    private final int buffer_leniency = 5;
+    private final int buffer_leniency = 7;
     private final Input input;
 
     public static float speedY;
@@ -67,6 +67,8 @@ public class Player extends GameObject {
 
     /**
      * renders the object every frame
+     * @param g the graphics to render to
+     * @throws SlickException thrown if a problem with the image occurs
      */
     public void render(Graphics g) throws SlickException {
         //g.draw(getHitbox());
@@ -187,5 +189,6 @@ public class Player extends GameObject {
         } else {
             jumpBuffer = 0;
         }
+        //System.out.println(jumpBuffer);
     }
 }

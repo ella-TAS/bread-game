@@ -53,7 +53,8 @@ public class Main extends BasicGame {
      * 1 - game
      * 2 - paused
      */
-    public static byte UIstate, sfxVolume;
+    public static byte UIstate;
+    public static byte sfxVolume;
     public static boolean gameover;
     private static int score, displayRed;
     private static byte menuSelect;
@@ -220,6 +221,8 @@ public class Main extends BasicGame {
     /**
      * handles the randomized spawning of items
      * @author Paul
+     * @throws SlickException thrown if a problem with the image occurs
+     * @throws IOException thrown if a problem with the particle loader occurs
      */
     private void spawnItems() throws SlickException, IOException {
         //bread
@@ -246,6 +249,8 @@ public class Main extends BasicGame {
 
     /**
      * spawns the boss if the requirements are fulfilled
+     * @throws SlickException thrown if a problem with the image occurs
+     * @throws IOException thrown if a problem with the particle loader occurs
      */
     private void bossCheck() throws SlickException, IOException {
         if(score > 200) {
@@ -256,66 +261,71 @@ public class Main extends BasicGame {
 
     /**
      * handles the menu navigation
+     * @param gc the game container to reset the game
+     * @throws SlickException thrown if a problem with the image occurs
      */
     private void menuing(GameContainer gc) throws SlickException {
-        boolean input_d = input.isKeyPressed(Input.KEY_DOWN) || input.isKeyPressed(Input.KEY_S);
-        boolean input_u = input.isKeyPressed(Input.KEY_UP) || input.isKeyPressed(Input.KEY_W);
-        boolean input_r = input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_D);
-        boolean input_l = input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_A);
-        boolean input_yes = input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE);
+        if(!frame_advance || input.isKeyPressed(Input.KEY_I)) {
+            boolean input_d = input.isKeyPressed(Input.KEY_DOWN) || input.isKeyPressed(Input.KEY_S);
+            boolean input_u = input.isKeyPressed(Input.KEY_UP) || input.isKeyPressed(Input.KEY_W);
+            boolean input_r = input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_D);
+            boolean input_l = input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_A);
+            boolean input_yes = input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_SPACE);
 
-        //menu
-        if(UIstate == 0) {
-            if(input_d) {
-                if(menuSelect == 2) menuSelect = 0;
-                else menuSelect++;
-            } else if(input_u) {
-                if(menuSelect == 0) menuSelect = 2;
-                else menuSelect--;
+            //menu
+            if (UIstate == 0) {
+                if (input_d) {
+                    if (menuSelect == 2) menuSelect = 0;
+                    else menuSelect++;
+                } else if (input_u) {
+                    if (menuSelect == 0) menuSelect = 2;
+                    else menuSelect--;
+                }
+                switch (menuSelect) {
+                    case 0:
+                        if (input_yes) {
+                            reset(gc);
+                        }
+                        break;
+                    case 1:
+                        sfxControl(input_r, input_l);
+                        break;
+                    case 2:
+                        if (input_yes) app.exit();
+                        break;
+                }
             }
-            switch(menuSelect) {
-                case 0:
-                    if(input_yes) {
-                        reset(gc);
-                    }
-                    break;
-                case 1:
-                    sfxControl(input_r, input_l);
-                    break;
-                case 2:
-                    if(input_yes) app.exit();
-                    break;
-            }
-        }
 
-        //paused
-        else if(UIstate == 2) {
-            if(input_d) {
-                if(menuSelect == 3) menuSelect = 0;
-                else menuSelect++;
-            } else if(input_u) {
-                if(menuSelect == 0) menuSelect = 3;
-                else menuSelect--;
-            }
-            switch(menuSelect) {
-                case 0:
-                    if(input_yes) UIstate = 1;
-                    break;
-                case 1:
-                    sfxControl(input_r, input_l);
-                    break;
-                case 2:
-                    if(input_yes) menu();
-                    break;
-                case 3:
-                    if(input_yes) app.exit();
-                    break;
+            //paused
+            else if(UIstate == 2) {
+                if(input_d) {
+                    if(menuSelect == 3) menuSelect = 0;
+                    else menuSelect++;
+                } else if(input_u) {
+                    if(menuSelect == 0) menuSelect = 3;
+                    else menuSelect--;
+                }
+                switch(menuSelect) {
+                    case 0:
+                        if(input_yes) UIstate = 1;
+                        break;
+                    case 1:
+                        sfxControl(input_r, input_l);
+                        break;
+                    case 2:
+                        if(input_yes) menu();
+                        break;
+                    case 3:
+                        if(input_yes) app.exit();
+                        break;
+                }
             }
         }
     }
 
     /**
      * increase or decrease the score
+     * @param i the score to add or remove
      */
     public static void addScore(int i) {
         score += i;
@@ -349,11 +359,13 @@ public class Main extends BasicGame {
 
     /**
      * resets and restarts the game
+     * @param gc the game container to reset the game
+     * @throws SlickException thrown if a problem with the image occurs
      */
     private void reset(GameContainer gc) throws SlickException {
         init(gc);
         UIstate = 1;
-        items.removeAll(items);
+        items.clear();
     }
 
     /**
@@ -386,6 +398,7 @@ public class Main extends BasicGame {
 
     /**
      * gives the AppGameContainer to the Main class
+     * @param a the AppGameContainer to save
      */
     public static void setApp(AppGameContainer a) {
         app = a;
@@ -393,6 +406,7 @@ public class Main extends BasicGame {
 
     /**
      * starts the game engine
+     * @param args arguments given when the program is executed
      */
     public static void main(String[] args) {
         try {
