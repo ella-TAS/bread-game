@@ -34,6 +34,7 @@ public class Boss extends GameObject {
 
     /**
      * updates the object every frame
+     * @param delta time since the last frame
      */
     public void update(int delta) {
         move();
@@ -45,6 +46,7 @@ public class Boss extends GameObject {
 
     /**
      * renders the object every frame
+     * @param g the graphics to render to
      */
     public void render(Graphics g) {
         pSystem.render();

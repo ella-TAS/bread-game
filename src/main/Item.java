@@ -17,6 +17,7 @@ public interface Item {
      * 0 - bread
      * 1 - bomb
      * 2 - powerup
+     * @return the type of the object
      */
     byte getType();
     boolean isDelete();

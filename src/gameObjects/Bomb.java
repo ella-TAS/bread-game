@@ -29,8 +29,8 @@ public class Bomb extends GameObject implements Item {
     private final float gravity = 0.2f;
     private final float terminal_velocity = 6f;
     private float posY,speedY;
-    private ParticleSystem pSystem;
-    private ConfigurableEmitter pEmitter;
+    private final ParticleSystem pSystem;
+    private final ConfigurableEmitter pEmitter;
 
     public Bomb(int x) throws SlickException, IOException {
         super(new Image("assets/textures/items/bomb_0.png", false, 2).getScaledCopy(4), x, spawn_y, 25);
@@ -67,8 +67,9 @@ public class Bomb extends GameObject implements Item {
 
     /**
      * counts down and controls the bomb explosion
+     * @throws SlickException thrown if a problem with the image occurs
      */
-    private void timer() throws SlickException, IOException {
+    private void timer() throws SlickException {
         if(ignited) {
             timer--;
             if(timer < 0) {
@@ -80,8 +81,9 @@ public class Bomb extends GameObject implements Item {
 
     /**
      * changes the sprite dependent on the timer
+     * @throws SlickException thrown if a problem with the image occurs
      */
-    private void spriteMachine() throws SlickException, IOException {
+    private void spriteMachine() throws SlickException {
         if(timer > 200) sprite = 1;
         else if(timer > 150) sprite = 2;
         else if(timer > 100) sprite = 3;
